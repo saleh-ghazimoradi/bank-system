@@ -12,8 +12,8 @@ type Account struct {
 	ID        int64     `json:"id"`
 	FirstName string    `json:"firstName"`
 	LastName  string    `json:"lastName"`
-	Number    int64     `json:"number"`
 	Balance   int64     `json:"balance"`
+	Number    int64     `json:"number"`
 	CreatedAt time.Time `json:"createdAt"`
 	Version   int32     `json:"version"`
 }
@@ -33,11 +33,11 @@ type AccountModel struct {
 
 func (a AccountModel) Insert(account *Account) error {
 	query := `
-        INSERT INTO bank (first_name, last_name, number, balance) 
+        INSERT INTO bank (first_name, last_name, balance, number) 
         VALUES ($1, $2, $3, $4)
         RETURNING id, created_at, version`
 
-	args := []any{account.FirstName, account.LastName, account.Number, account.Balance}
+	args := []any{account.FirstName, account.LastName, account.Balance, account.Number}
 	return a.DB.QueryRow(query, args...).Scan(&account.ID, &account.CreatedAt, &account.Version)
 }
 
@@ -46,7 +46,7 @@ func (a AccountModel) Get(id int64) (*Account, error) {
 		return nil, ErrRecordNotFound
 	}
 
-	query := `SELECT id, created_at, first_name, last_name, number,balance,version
+	query := `SELECT id, created_at, first_name, last_name, balance, number, version
 	FROM bank
 	WHERE id = $1`
 
@@ -75,7 +75,20 @@ func (a AccountModel) Get(id int64) (*Account, error) {
 }
 
 func (a AccountModel) Update(account *Account) error {
-	return nil
+	query := `
+        UPDATE bank
+        SET first_name = $1, last_name = $2, balance = $3, version = version + 1
+        WHERE id = $4
+        RETURNING version`
+
+	args := []any{
+		account.FirstName,
+		account.LastName,
+		account.Balance,
+		account.ID,
+	}
+
+	return a.DB.QueryRow(query, args...).Scan(&account.Version)
 }
 
 func (a AccountModel) Delete(id int64) error {

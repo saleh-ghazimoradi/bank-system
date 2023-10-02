@@ -92,5 +92,55 @@ func (app *application) deleteAnAccountHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (app *application) updateAnAccountHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "update an account")
+	id, err := app.readIDParam(r)
+
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	account, err := app.models.Account.Get(id)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Balance   int64  `json:"balance"`
+	}
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	account.FirstName = input.FirstName
+	account.LastName = input.LastName
+	account.Balance = input.Balance
+
+	v := validator.New()
+
+	if data.ValidateAccount(v, account); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Account.Update(account)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"account": account}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
