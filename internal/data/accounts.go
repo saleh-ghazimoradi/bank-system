@@ -78,7 +78,7 @@ func (a AccountModel) Update(account *Account) error {
 	query := `
         UPDATE bank
         SET first_name = $1, last_name = $2, balance = $3, version = version + 1
-        WHERE id = $4
+        WHERE id = $4 AND version = $5
         RETURNING version`
 
 	args := []any{
@@ -86,9 +86,20 @@ func (a AccountModel) Update(account *Account) error {
 		account.LastName,
 		account.Balance,
 		account.ID,
+		account.Version,
 	}
 
-	return a.DB.QueryRow(query, args...).Scan(&account.Version)
+	err := a.DB.QueryRow(query, args...).Scan(&account.Version)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+	return nil
 }
 
 func (a AccountModel) Delete(id int64) error {

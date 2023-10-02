@@ -165,8 +165,14 @@ func (app *application) updateAnAccountHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	err = app.models.Account.Update(account)
+
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
