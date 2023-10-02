@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/saleh-ghazimoradi/bank-system.git/internal/data"
+	"github.com/saleh-ghazimoradi/bank-system.git/internal/validator"
 )
 
 func (app *application) showAListOfAccountsHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +42,30 @@ func (app *application) showAnAccountHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) createAnAccountHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create an account")
+	var input struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	account := &data.Account{
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
+	}
+
+	v := validator.New()
+
+	if data.ValidateAccount(v, account); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) deleteAnAccountHandler(w http.ResponseWriter, r *http.Request) {
