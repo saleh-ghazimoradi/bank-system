@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -38,7 +39,12 @@ func (a AccountModel) Insert(account *Account) error {
         RETURNING id, created_at, version`
 
 	args := []any{account.FirstName, account.LastName, account.Balance, account.Number}
-	return a.DB.QueryRow(query, args...).Scan(&account.ID, &account.CreatedAt, &account.Version)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	return a.DB.QueryRowContext(ctx, query, args...).Scan(&account.ID, &account.CreatedAt, &account.Version)
 }
 
 func (a AccountModel) Get(id int64) (*Account, error) {
@@ -52,7 +58,11 @@ func (a AccountModel) Get(id int64) (*Account, error) {
 
 	var account Account
 
-	err := a.DB.QueryRow(query, id).Scan(
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := a.DB.QueryRowContext(ctx, query, id).Scan(
 		&account.ID,
 		&account.CreatedAt,
 		&account.FirstName,
@@ -89,7 +99,11 @@ func (a AccountModel) Update(account *Account) error {
 		account.Version,
 	}
 
-	err := a.DB.QueryRow(query, args...).Scan(&account.Version)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := a.DB.QueryRowContext(ctx, query, args...).Scan(&account.Version)
 
 	if err != nil {
 		switch {
@@ -110,7 +124,11 @@ func (a AccountModel) Delete(id int64) error {
 	query := `DELETE FROM bank
         WHERE id = $1`
 
-	result, err := a.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := a.DB.ExecContext(ctx, query, id)
 
 	if err != nil {
 		return err
