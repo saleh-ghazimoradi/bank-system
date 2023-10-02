@@ -135,9 +135,9 @@ func (app *application) updateAnAccountHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	var input struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Balance   int64  `json:"balance"`
+		FirstName *string `json:"firstName"`
+		LastName  *string `json:"lastName"`
+		Balance   *int64  `json:"balance"`
 	}
 	err = app.readJSON(w, r, &input)
 	if err != nil {
@@ -145,9 +145,17 @@ func (app *application) updateAnAccountHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	account.FirstName = input.FirstName
-	account.LastName = input.LastName
-	account.Balance = input.Balance
+	if input.FirstName != nil {
+		account.FirstName = *input.FirstName
+	}
+
+	if input.LastName != nil {
+		account.LastName = *input.LastName
+	}
+
+	if input.Balance != nil {
+		account.Balance = *input.Balance
+	}
 
 	v := validator.New()
 
