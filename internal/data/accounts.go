@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/saleh-ghazimoradi/bank-system.git/internal/validator"
@@ -23,4 +24,24 @@ func ValidateAccount(v *validator.Validator, account *Account) {
 	v.Check(account.LastName != "", "last name", "must be provided")
 	v.Check(len(account.LastName) >= 3 && len(account.LastName) <= 15, "lastName", "must neither be less than 3 nor greater than 15 bytes long")
 
+}
+
+type AccountModel struct {
+	DB *sql.DB
+}
+
+func (a AccountModel) Insert(account *Account) error {
+	return nil
+}
+
+func (a AccountModel) Get(id int64) (*Account, error) {
+	return nil, nil
+}
+
+func (a AccountModel) Update(account *Account) error {
+	return nil
+}
+
+func (a AccountModel) Delete(id int64) error {
+	return nil
 }
