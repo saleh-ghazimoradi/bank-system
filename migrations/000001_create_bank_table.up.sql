@@ -6,7 +6,7 @@ CREATE TABLE
             time zone NOT NULL DEFAULT NOW(),
             first_name text NOT NULL,
             last_name text NOT NULL,
-            number serial NOT NULL,
-            balance serial not NULL,
+            number bigserial NOT NULL,
+            balance bigserial not NULL,
             version integer NOT NULL DEFAULT 1
     );
