@@ -1,6 +1,10 @@
 package data
 
-import "time"
+import (
+	"time"
+
+	"github.com/saleh-ghazimoradi/bank-system.git/internal/validator"
+)
 
 type Account struct {
 	ID        int64     `json:"id"`
@@ -10,4 +14,13 @@ type Account struct {
 	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"createdAt"`
 	Version   int32     `json:"version"`
+}
+
+func ValidateAccount(v *validator.Validator, account *Account) {
+	v.Check(account.FirstName != "", "firstName", "must be provided")
+	v.Check(len(account.FirstName) >= 3 && len(account.FirstName) <= 15, "firstName", "must neither be less than 3 nor greater than 15 bytes long")
+
+	v.Check(account.LastName != "", "last name", "must be provided")
+	v.Check(len(account.LastName) >= 3 && len(account.LastName) <= 15, "lastName", "must neither be less than 3 nor greater than 15 bytes long")
+
 }
