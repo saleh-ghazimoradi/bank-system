@@ -32,7 +32,7 @@ func (app *application) showAnAccountHandler(w http.ResponseWriter, r *http.Requ
 		Version:   1,
 	}
 
-	err = app.writeJSON(w, http.StatusOK, account, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"account": account}, nil)
 
 	if err != nil {
 		app.logger.Error(err.Error())
