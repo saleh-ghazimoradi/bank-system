@@ -88,7 +88,30 @@ func (app *application) createAnAccountHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (app *application) deleteAnAccountHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "delete an account by ID")
+	id, err := app.readIDParam(r)
+
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Account.Delete(id)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "movie successfully deleted"}, nil)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) updateAnAccountHandler(w http.ResponseWriter, r *http.Request) {

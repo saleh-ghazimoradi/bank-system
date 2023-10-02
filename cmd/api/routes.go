@@ -7,9 +7,11 @@ import (
 )
 
 func (app *application) routes() http.Handler {
+
 	router := httprouter.New()
 
 	router.NotFound = http.HandlerFunc(app.notFoundResponse)
+
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
@@ -21,6 +23,8 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPatch, "/v1/accounts/:id", app.updateAnAccountHandler)
 
 	router.HandlerFunc(http.MethodPost, "/v1/accounts", app.createAnAccountHandler)
+
+	router.HandlerFunc(http.MethodDelete, "/v1/accounts/:id", app.deleteAnAccountHandler)
 
 	return app.recoverPanic(router)
 }
