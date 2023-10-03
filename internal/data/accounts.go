@@ -146,3 +146,47 @@ func (a AccountModel) Delete(id int64) error {
 
 	return nil
 }
+
+func (a AccountModel) GetAll() ([]*Account, error) {
+	query := `
+        SELECT id, created_at, first_name, last_name, balance, number, version
+        FROM bank
+        ORDER BY id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := a.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	accounts := []*Account{}
+
+	for rows.Next() {
+		var account Account
+
+		err := rows.Scan(
+			&account.ID,
+			&account.CreatedAt,
+			&account.FirstName,
+			&account.LastName,
+			&account.Balance,
+			&account.Number,
+			&account.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, &account)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}

@@ -11,7 +11,17 @@ import (
 )
 
 func (app *application) showAListOfAccountsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "show a lists of accounts")
+
+	accounts, err := app.models.Account.GetAll()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"accounts": accounts}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showAnAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +117,7 @@ func (app *application) deleteAnAccountHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "movie successfully deleted"}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "account's successfully been deleted"}, nil)
 
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
